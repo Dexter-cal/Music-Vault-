@@ -23,22 +23,22 @@ class ViewManager:
 
     def get_all_tracks(self) -> List[Track]:
         """Returns all tracks from the library."""
-        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration FROM tracks ORDER BY artist, album, title"
+        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration, date_added FROM tracks ORDER BY artist, album, title"
         return self._execute_query(query)
 
     def get_tracks_by_artist(self, artist: str) -> List[Track]:
         """Returns all tracks by a specific artist."""
-        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration FROM tracks WHERE artist=? ORDER BY album, title"
+        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration, date_added FROM tracks WHERE artist=? ORDER BY album, title"
         return self._execute_query(query, (artist,))
 
     def get_tracks_by_album(self, album: str) -> List[Track]:
         """Returns all tracks from a specific album."""
-        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration FROM tracks WHERE album=? ORDER BY title"
+        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration, date_added FROM tracks WHERE album=? ORDER BY title"
         return self._execute_query(query, (album,))
 
     def get_tracks_by_genre(self, genre: str) -> List[Track]:
         """Returns all tracks of a specific genre."""
-        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration FROM tracks WHERE genre=? ORDER BY artist, album, title"
+        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration, date_added FROM tracks WHERE genre=? ORDER BY artist, album, title"
         return self._execute_query(query, (genre,))
 
     def get_distinct_artists(self) -> List[str]:
@@ -52,6 +52,11 @@ class ViewManager:
         cursor = self.conn.cursor()
         cursor.execute("SELECT DISTINCT album FROM tracks ORDER BY album")
         return [row[0] for row in cursor.fetchall()]
+
+    def get_recently_added_tracks(self, limit: int = 20) -> List[Track]:
+        """Returns the most recently added tracks."""
+        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration, date_added FROM tracks ORDER BY date_added DESC LIMIT ?"
+        return self._execute_query(query, (limit,))
 
     def __enter__(self):
         """Enters a context management block."""

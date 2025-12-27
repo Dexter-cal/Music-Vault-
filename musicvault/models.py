@@ -13,6 +13,7 @@ class Track:
     release_year: Optional[int] = None
     duration: Optional[float] = None
     fingerprint: Optional[str] = None
+    date_added: Optional[str] = None
 
 @dataclass
 class Playlist:

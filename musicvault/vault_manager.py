@@ -26,7 +26,8 @@ class VaultManager:
                 album TEXT,
                 genre TEXT,
                 release_year INTEGER,
-                duration REAL
+                duration REAL,
+                date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         self.conn.commit()
@@ -55,8 +56,12 @@ class VaultManager:
                 (filepath, title, artist, album, genre, release_year, duration)
             )
             self.conn.commit()
-
             track_id = cursor.lastrowid
+
+            # Retrieve the newly inserted track to get the date_added
+            cursor.execute("SELECT date_added FROM tracks WHERE id=?", (track_id,))
+            date_added = cursor.fetchone()[0]
+
             return Track(
                 id=track_id,
                 filepath=filepath,

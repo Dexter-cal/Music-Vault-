@@ -8,6 +8,7 @@ from musicvault.vault_manager import VaultManager
 from musicvault.sandbox_manager import SandboxManager
 from musicvault.view_manager import ViewManager
 from musicvault.models import Track
+import time
 
 class TestSandboxAndViewManagers(unittest.TestCase):
 
@@ -85,6 +86,28 @@ class TestSandboxAndViewManagers(unittest.TestCase):
         artists = self.view_manager.get_distinct_artists()
         self.assertIn("Test Artist", artists)
         self.assertEqual(len(artists), 1)
+
+    def test_get_recently_added_tracks(self):
+        """Test retrieving recently added tracks."""
+        # Add a second track after a short delay
+        time.sleep(1)
+        dummy_filepath2 = "dummy_test2.mp3"
+        subprocess.run([
+            'ffmpeg', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono',
+            '-t', '1', '-q:a', '9', '-acodec', 'libmp3lame', dummy_filepath2
+        ], check=True, capture_output=True)
+        audio = EasyID3()
+        audio['title'] = 'Test Song 2'
+        audio['artist'] = 'Test Artist 2'
+        audio.save(dummy_filepath2)
+        track2 = self.vault_manager.add_track(dummy_filepath2)
+
+        recently_added = self.view_manager.get_recently_added_tracks(limit=2)
+        self.assertEqual(len(recently_added), 2)
+        self.assertEqual(recently_added[0].title, "Test Song 2")
+        self.assertEqual(recently_added[1].title, "Test Song")
+
+        os.remove(dummy_filepath2)
 
 if __name__ == '__main__':
     unittest.main()

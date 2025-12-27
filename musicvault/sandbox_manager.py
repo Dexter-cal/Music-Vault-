@@ -67,7 +67,7 @@ class SandboxManager:
         playlist = Playlist(id=playlist_row[0], name=playlist_row[1])
 
         cursor.execute("""
-            SELECT t.id, t.filepath, t.title, t.artist, t.album, t.genre, t.release_year, t.duration
+            SELECT t.id, t.filepath, t.title, t.artist, t.album, t.genre, t.release_year, t.duration, t.date_added
             FROM tracks t
             JOIN playlist_tracks pt ON t.id = pt.track_id
             WHERE pt.playlist_id = ?
