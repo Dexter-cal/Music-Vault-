@@ -14,6 +14,20 @@ class Track:
     duration: Optional[float] = None
     fingerprint: Optional[str] = None
 
+    def to_dict(self):
+        """Converts the Track object to a dictionary."""
+        return {
+            "id": self.id,
+            "filepath": self.filepath,
+            "title": self.title,
+            "artist": self.artist,
+            "album": self.album,
+            "genre": self.genre,
+            "release_year": self.release_year,
+            "duration": self.duration,
+            "fingerprint": self.fingerprint
+        }
+
 @dataclass
 class Playlist:
     """Represents a user-defined playlist of tracks."""

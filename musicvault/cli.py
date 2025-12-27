@@ -2,7 +2,7 @@ import os
 from musicvault.vault_manager import VaultManager
 from musicvault.sandbox_manager import SandboxManager
 from musicvault.view_manager import ViewManager
-from musicvault.api import run_api_server
+from musicvault.api import create_app, run_api_server
 
 DB_PATH = "musicvault.db"
 
@@ -43,7 +43,8 @@ def main():
                 break
             elif action == "serve":
                 print("Starting API server...")
-                run_api_server()
+                app = create_app(DB_PATH)
+                run_api_server(app)
                 # After the server is stopped, the loop will continue.
                 # The user might want to exit or run other commands.
                 print("API server stopped.")

@@ -47,6 +47,18 @@ class ViewManager:
         cursor.execute("SELECT DISTINCT artist FROM tracks ORDER BY artist")
         return [row[0] for row in cursor.fetchall()]
 
+    def get_distinct_albums(self) -> List[str]:
+        """Returns a list of all unique album titles."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT DISTINCT album FROM tracks ORDER BY album")
+        return [row[0] for row in cursor.fetchall()]
+
+    def get_distinct_genres(self) -> List[str]:
+        """Returns a list of all unique genres."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT DISTINCT genre FROM tracks WHERE genre IS NOT NULL ORDER BY genre")
+        return [row[0] for row in cursor.fetchall()]
+
     def close(self):
         """Closes the database connection."""
         self.conn.close()
