@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, Alert, TextInput } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { colors } from '../theme';
 
 export default function DevicesScreen({ navigation, route }) {
   const { isConnected, connectToServer, setApiUrl } = useAuth();
@@ -31,6 +32,7 @@ export default function DevicesScreen({ navigation, route }) {
       <TextInput
         style={styles.input}
         placeholder="Enter PC's IP Address"
+        placeholderTextColor={colors.textSecondary}
         value={ipAddress}
         onChangeText={setIpAddress}
         autoCapitalize="none"
@@ -38,6 +40,7 @@ export default function DevicesScreen({ navigation, route }) {
       />
       <Button
         title="Connect to PC"
+        color={colors.primary}
         onPress={() => {
           if (!ipAddress) {
             Alert.alert("IP Address Required", "Please enter the PC's IP address.");
@@ -54,6 +57,7 @@ export default function DevicesScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -61,17 +65,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    color: colors.text,
     marginBottom: 20,
   },
   status: {
     fontSize: 18,
+    color: colors.text,
     marginBottom: 20,
   },
   input: {
     width: '100%',
     height: 40,
-    borderColor: 'gray',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderWidth: 1,
+    borderRadius: 5,
+    color: colors.text,
     marginBottom: 20,
     paddingHorizontal: 10,
   },

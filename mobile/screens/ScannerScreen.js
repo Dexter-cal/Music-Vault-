@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import { colors } from '../theme';
 
 export default function ScannerScreen({ navigation }) {
   const [hasPermission, setHasPermission] = useState(null);
@@ -15,15 +16,14 @@ export default function ScannerScreen({ navigation }) {
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    // We will pass the scanned data back to the Devices screen
     navigation.navigate('Devices', { qrCodeData: data });
   };
 
   if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
+    return <Text style={styles.text}>Requesting for camera permission</Text>;
   }
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return <Text style={styles.text}>No access to camera</Text>;
   }
 
   return (
@@ -32,7 +32,10 @@ export default function ScannerScreen({ navigation }) {
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
         style={StyleSheet.absoluteFillObject}
       />
-      {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
+      <View style={styles.overlay}>
+        <Text style={styles.overlayText}>Scan the QR code from your PC</Text>
+      </View>
+      {scanned && <Button title={'Tap to Scan Again'} color={colors.primary} onPress={() => setScanned(false)} />}
     </View>
   );
 }
@@ -40,7 +43,22 @@ export default function ScannerScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
+    backgroundColor: colors.background,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    color: colors.text,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 50,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 15,
+    borderRadius: 10,
+  },
+  overlayText: {
+    color: colors.text,
+    fontSize: 16,
   },
 });

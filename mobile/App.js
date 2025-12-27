@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { StatusBar } from 'react-native';
 import LibraryScreen from './screens/LibraryScreen';
 import SearchScreen from './screens/SearchScreen';
 import NowPlayingScreen from './screens/NowPlayingScreen';
 import PlaylistsScreen from './screens/PlaylistsScreen';
 import DevicesNavigator from './navigation/DevicesNavigator';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { PlayerProvider } from './context/PlayerContext';
+import { theme, colors } from './theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -18,7 +21,15 @@ function AppContent() {
   }, []);
 
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: { backgroundColor: colors.surface },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+      }}
+    >
       <Tab.Screen name="Library" component={LibraryScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Now Playing" component={NowPlayingScreen} />
@@ -31,9 +42,12 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <AppContent />
-      </NavigationContainer>
+      <PlayerProvider>
+        <NavigationContainer theme={theme}>
+          <StatusBar barStyle="light-content" />
+          <AppContent />
+        </NavigationContainer>
+      </PlayerProvider>
     </AuthProvider>
   );
 }
