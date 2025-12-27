@@ -47,6 +47,20 @@ class ViewManager:
         cursor.execute("SELECT DISTINCT artist FROM tracks ORDER BY artist")
         return [row[0] for row in cursor.fetchall()]
 
+    def get_distinct_albums(self) -> List[str]:
+        """Returns a list of all unique albums."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT DISTINCT album FROM tracks ORDER BY album")
+        return [row[0] for row in cursor.fetchall()]
+
+    def __enter__(self):
+        """Enters a context management block."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exits a context management block, closing the connection."""
+        self.conn.close()
+
     def close(self):
         """Closes the database connection."""
         self.conn.close()
