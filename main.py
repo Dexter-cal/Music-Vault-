@@ -1,6 +1,6 @@
 import sys
 import os
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton
 from PySide6.QtCore import QTimer
 from musicvault.api_server import create_api_server, ServerThread
 from musicvault.vault_manager import VaultManager
@@ -8,6 +8,7 @@ from musicvault.sandbox_manager import SandboxManager
 from musicvault.ui_library import LibraryView
 from musicvault.ui_player import PlayerControls
 from musicvault.player import Player
+from musicvault.ui_settings import SettingsWindow
 
 DB_PATH = "musicvault.db"
 
@@ -34,6 +35,11 @@ class MainWindow(QMainWindow):
         self.player_controls = PlayerControls(self.player)
         layout.addWidget(self.player_controls)
 
+        # Add settings button
+        self.settings_button = QPushButton("Settings")
+        layout.addWidget(self.settings_button)
+        self.settings_button.clicked.connect(self.open_settings)
+
         # Connect signals
         self.library_view.track_selected.connect(self.play_track)
 
@@ -50,6 +56,11 @@ class MainWindow(QMainWindow):
         self.player.play()
         self.player_controls.set_current_track_label(f"Now Playing: {track.title}")
         self.player_controls.play_pause_button.setText("Pause")
+
+    def open_settings(self):
+        """Opens the settings window."""
+        self.settings_window = SettingsWindow()
+        self.settings_window.show()
 
 def main():
     """The main entry point for the application."""

@@ -14,6 +14,7 @@ class Track:
     duration: Optional[float] = None
     fingerprint: Optional[str] = None
     date_added: Optional[str] = None
+    is_favorite: bool = False
 
 @dataclass
 class Playlist:

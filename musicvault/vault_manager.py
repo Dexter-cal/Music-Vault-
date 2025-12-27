@@ -27,7 +27,8 @@ class VaultManager:
                 genre TEXT,
                 release_year INTEGER,
                 duration REAL,
-                date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_favorite BOOLEAN DEFAULT 0
             )
         ''')
         self.conn.commit()
@@ -75,6 +76,12 @@ class VaultManager:
         except Exception as e:
             print(f"Error processing file {filepath}: {e}")
             return None
+
+    def toggle_favorite(self, track_id: int):
+        """Toggles the favorite status of a track."""
+        cursor = self.conn.cursor()
+        cursor.execute("UPDATE tracks SET is_favorite = NOT is_favorite WHERE id=?", (track_id,))
+        self.conn.commit()
 
     def close(self):
         """Closes the database connection."""

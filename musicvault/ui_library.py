@@ -1,6 +1,7 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QListWidget, QListWidgetItem, QTabWidget, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QListWidget, QListWidgetItem, QTabWidget, QLabel, QMenu
 from PySide6.QtCore import Signal, Qt
 from musicvault.view_manager import ViewManager
+from musicvault.vault_manager import VaultManager
 
 DB_PATH = "musicvault.db"
 
@@ -12,6 +13,10 @@ class LibraryView(QWidget):
         super().__init__()
         self.layout = QVBoxLayout(self)
 
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Search tracks...")
+        self.layout.addWidget(self.search_bar)
+
         self.tabs = QTabWidget()
         self.layout.addWidget(self.tabs)
 
@@ -21,11 +26,13 @@ class LibraryView(QWidget):
         self.albums_tab = QWidget()
         self.recently_added_tab = QWidget()
         self.for_you_tab = QWidget()
+        self.favorites_tab = QWidget()
 
         self.tabs.addTab(self.all_tracks_tab, "All Tracks")
         self.tabs.addTab(self.artists_tab, "Artists")
         self.tabs.addTab(self.albums_tab, "Albums")
         self.tabs.addTab(self.recently_added_tab, "Recently Added")
+        self.tabs.addTab(self.favorites_tab, "Favorites")
         self.tabs.addTab(self.for_you_tab, "For You")
 
         # Create list widgets as member variables
@@ -33,18 +40,30 @@ class LibraryView(QWidget):
         self.artist_list = QListWidget()
         self.album_list = QListWidget()
         self.recently_added_list = QListWidget()
+        self.favorites_list = QListWidget()
 
         # Populate tabs
         self.setup_all_tracks_tab()
         self.setup_artists_tab()
         self.setup_albums_tab()
         self.setup_recently_added_tab()
+        self.setup_favorites_tab()
         self.setup_for_you_tab()
 
         # Connect signals
         self.track_list.itemDoubleClicked.connect(self.on_track_double_clicked)
         self.artist_list.itemClicked.connect(self.on_artist_selected)
         self.recently_added_list.itemDoubleClicked.connect(self.on_track_double_clicked)
+        self.favorites_list.itemDoubleClicked.connect(self.on_track_double_clicked)
+        self.search_bar.textChanged.connect(self.on_search_changed)
+
+        # Set context menus
+        self.track_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.track_list.customContextMenuRequested.connect(self.show_track_context_menu)
+        self.recently_added_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.recently_added_list.customContextMenuRequested.connect(self.show_track_context_menu)
+        self.favorites_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.favorites_list.customContextMenuRequested.connect(self.show_track_context_menu)
 
     def setup_all_tracks_tab(self):
         """Sets up the 'All Tracks' tab with a list of all tracks."""
@@ -64,11 +83,13 @@ class LibraryView(QWidget):
         layout.addWidget(self.album_list)
         self.update_album_list()
 
-    def update_track_list(self, artist_name=None, album_name=None):
-        """Updates the track list, optionally filtering by artist or album."""
+    def update_track_list(self, artist_name=None, album_name=None, search_query=None):
+        """Updates the track list, optionally filtering by artist, album, or search query."""
         self.track_list.clear()
         with ViewManager(DB_PATH) as view_manager:
-            if artist_name:
+            if search_query:
+                tracks = view_manager.search_tracks(search_query)
+            elif artist_name:
                 tracks = view_manager.get_tracks_by_artist(artist_name)
             elif album_name:
                 tracks = view_manager.get_tracks_by_album(album_name)
@@ -129,3 +150,50 @@ class LibraryView(QWidget):
         placeholder_label = QLabel("AI-powered suggestions will appear here.\nEnable AI in Settings to get started.")
         placeholder_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(placeholder_label)
+
+    def setup_favorites_tab(self):
+        """Sets up the 'Favorites' tab with a list of favorite tracks."""
+        layout = QVBoxLayout(self.favorites_tab)
+        layout.addWidget(self.favorites_list)
+        self.update_favorites_list()
+
+    def update_favorites_list(self):
+        """Updates the favorites list."""
+        self.favorites_list.clear()
+        with ViewManager(DB_PATH) as view_manager:
+            tracks = view_manager.get_favorite_tracks()
+            for track in tracks:
+                item = QListWidgetItem(f"{track.title} - {track.artist}")
+                item.setData(1, track)
+                self.favorites_list.addItem(item)
+
+    def show_track_context_menu(self, pos):
+        """Shows a context menu for a track."""
+        list_widget = self.sender()
+        item = list_widget.itemAt(pos)
+        if not item:
+            return
+
+        track = item.data(1)
+
+        menu = QMenu()
+        favorite_action = menu.addAction("Add to Favorites" if not track.is_favorite else "Remove from Favorites")
+        action = menu.exec(list_widget.mapToGlobal(pos))
+
+        if action == favorite_action:
+            with VaultManager(DB_PATH) as vault_manager:
+                vault_manager.toggle_favorite(track.id)
+            self.update_all_views()
+
+    def update_all_views(self):
+        """Updates all the library views."""
+        self.update_track_list()
+        self.update_artist_list()
+        self.update_album_list()
+        self.update_recently_added_list()
+        self.update_favorites_list()
+
+    def on_search_changed(self, query):
+        """Filters the track list based on the search query."""
+        self.update_track_list(search_query=query)
+        self.tabs.setCurrentWidget(self.all_tracks_tab)

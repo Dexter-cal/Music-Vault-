@@ -109,5 +109,48 @@ class TestSandboxAndViewManagers(unittest.TestCase):
 
         os.remove(dummy_filepath2)
 
+    def test_search_tracks(self):
+        """Test searching for tracks."""
+        # Add a second track
+        dummy_filepath2 = "dummy_test2.mp3"
+        subprocess.run([
+            'ffmpeg', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono',
+            '-t', '1', '-q:a', '9', '-acodec', 'libmp3lame', dummy_filepath2
+        ], check=True, capture_output=True)
+        audio = EasyID3()
+        audio['title'] = 'Another Song'
+        audio['artist'] = 'Another Artist'
+        audio.save(dummy_filepath2)
+        self.vault_manager.add_track(dummy_filepath2)
+
+        # Search by title
+        results = self.view_manager.search_tracks("Another Song")
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].title, "Another Song")
+
+        # Search by artist
+        results = self.view_manager.search_tracks("Another Artist")
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].artist, "Another Artist")
+
+        os.remove(dummy_filepath2)
+
+    def test_favorites(self):
+        """Test toggling favorite status and retrieving favorite tracks."""
+        # Mark track as favorite
+        self.vault_manager.toggle_favorite(self.test_track.id)
+
+        # Verify it's in favorites
+        favorites = self.view_manager.get_favorite_tracks()
+        self.assertEqual(len(favorites), 1)
+        self.assertEqual(favorites[0].title, "Test Song")
+
+        # Unmark as favorite
+        self.vault_manager.toggle_favorite(self.test_track.id)
+
+        # Verify it's not in favorites
+        favorites = self.view_manager.get_favorite_tracks()
+        self.assertEqual(len(favorites), 0)
+
 if __name__ == '__main__':
     unittest.main()
