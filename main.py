@@ -1,7 +1,8 @@
 import sys
 import os
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton
-from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QLabel
+from PySide6.QtCore import QTimer, QSize
+from PySide6.QtGui import QIcon
 from musicvault.api_server import create_api_server, ServerThread
 from musicvault.vault_manager import VaultManager
 from musicvault.sandbox_manager import SandboxManager
@@ -17,31 +18,53 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MusicVault")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1024, 768)
 
-        # Create a central widget and layout
+        # Create a central widget and main layout
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-        layout = QVBoxLayout(central_widget)
+        main_layout = QHBoxLayout(central_widget)
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Create the player
+        # Create player
         self.player = Player()
 
-        # Add the library view
+        # Create sidebar
+        self.sidebar = self.create_sidebar()
+        main_layout.addWidget(self.sidebar)
+
+        # Create content area
+        self.content_area = QWidget()
+        self.content_layout = QVBoxLayout(self.content_area)
+        main_layout.addWidget(self.content_area, 1)
+
+        # Add the library view to the content area
         self.library_view = LibraryView()
-        layout.addWidget(self.library_view)
-
-        # Add the player controls
-        self.player_controls = PlayerControls(self.player)
-        layout.addWidget(self.player_controls)
-
-        # Add settings button
-        self.settings_button = QPushButton("Settings")
-        layout.addWidget(self.settings_button)
-        self.settings_button.clicked.connect(self.open_settings)
+        self.content_layout.addWidget(self.library_view)
 
         # Connect signals
         self.library_view.track_selected.connect(self.play_track)
+
+        # Connect sidebar buttons to the library view
+        self.sidebar.findChild(QPushButton, "All Tracks").clicked.connect(
+            lambda: self.library_view.update_view("all_tracks")
+        )
+        self.sidebar.findChild(QPushButton, "Artists").clicked.connect(
+            lambda: self.library_view.update_view("artists")
+        )
+        self.sidebar.findChild(QPushButton, "Albums").clicked.connect(
+            lambda: self.library_view.update_view("albums")
+        )
+        self.sidebar.findChild(QPushButton, "Recently Added").clicked.connect(
+            lambda: self.library_view.update_view("recently_added")
+        )
+        self.sidebar.findChild(QPushButton, "Favorites").clicked.connect(
+            lambda: self.library_view.update_view("favorites")
+        )
+
+        # Connect settings button
+        self.sidebar.findChild(QPushButton, "Settings").clicked.connect(self.open_settings)
 
         # Do not start the server if we are just taking a screenshot
         if '--screenshot' not in sys.argv:
@@ -49,6 +72,45 @@ class MainWindow(QMainWindow):
             self.server_thread = ServerThread(self.api_app)
             self.server_thread.daemon = True
             self.server_thread.start()
+
+    def create_sidebar(self):
+        """Creates the navigation sidebar."""
+        sidebar = QWidget()
+        sidebar_layout = QVBoxLayout(sidebar)
+        sidebar.setFixedWidth(200)
+        sidebar.setStyleSheet("background-color: #222222;")
+
+        # Add navigation buttons
+        buttons_data = [
+            ("All Tracks", "icons/music-1.svg"),
+            ("Artists", "icons/user.svg"),
+            ("Albums", "icons/album.svg"),
+            ("Recently Added", "icons/clock.svg"),
+            ("Favorites", "icons/star.svg"),
+            ("For You", "icons/magic-wand.svg"),
+        ]
+
+        for name, icon_path in buttons_data:
+            btn = QPushButton(name)
+            btn.setObjectName(name)
+            btn.setIcon(QIcon(icon_path))
+            btn.setIconSize(QSize(24, 24))
+            sidebar_layout.addWidget(btn)
+
+        sidebar_layout.addStretch()
+
+        # Add player controls
+        self.player_controls = PlayerControls(self.player)
+        sidebar_layout.addWidget(self.player_controls)
+
+        # Add settings button
+        btn_settings = QPushButton("Settings")
+        btn_settings.setObjectName("Settings")
+        btn_settings.setIcon(QIcon("icons/settings.svg"))
+        btn_settings.setIconSize(QSize(24, 24))
+        sidebar_layout.addWidget(btn_settings)
+
+        return sidebar
 
     def play_track(self, track):
         """Loads and plays the selected track."""
@@ -74,19 +136,22 @@ def main():
     sandbox_manager.close()
 
     app = QApplication(sys.argv)
+
+    # Load and apply the stylesheet
+    with open("styles.qss", "r") as f:
+        app.setStyleSheet(f.read())
+
     window = MainWindow()
 
     if '--screenshot' in sys.argv:
-        # In screenshot mode, show the window, take a screenshot after a delay, and exit.
         window.show()
         def take_screenshot_and_exit():
             pixmap = window.grab()
             pixmap.save("verification.png")
             print("Screenshot saved to verification.png")
             app.quit()
-        QTimer.singleShot(1000, take_screenshot_and_exit) # 1 second delay for rendering
+        QTimer.singleShot(1000, take_screenshot_and_exit)
     else:
-        # In normal mode, just show the window.
         window.show()
 
     sys.exit(app.exec())

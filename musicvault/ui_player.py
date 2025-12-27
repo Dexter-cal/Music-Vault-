@@ -1,4 +1,6 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLabel
+from PySide6.QtGui import QIcon
+from PySide6.QtCore import QSize
 from musicvault.player import Player
 
 class PlayerControls(QWidget):
@@ -10,8 +12,16 @@ class PlayerControls(QWidget):
         self.layout = QHBoxLayout(self)
 
         # Create controls
-        self.play_pause_button = QPushButton("Play")
-        self.stop_button = QPushButton("Stop")
+        self.play_pause_button = QPushButton()
+        self.play_icon = QIcon("icons/play.svg")
+        self.pause_icon = QIcon("icons/pause.svg")
+        self.play_pause_button.setIcon(self.play_icon)
+        self.play_pause_button.setIconSize(QSize(24, 24))
+
+        self.stop_button = QPushButton()
+        self.stop_button.setIcon(QIcon("icons/stop.svg"))
+        self.stop_button.setIconSize(QSize(24, 24))
+
         self.current_track_label = QLabel("No track selected")
 
         # Add controls to layout
@@ -27,10 +37,10 @@ class PlayerControls(QWidget):
         """Toggles between playing and pausing the current track."""
         if self.player.is_playing:
             self.player.pause()
-            self.play_pause_button.setText("Play")
+            self.play_pause_button.setIcon(self.play_icon)
         else:
             self.player.play()
-            self.play_pause_button.setText("Pause")
+            self.play_pause_button.setIcon(self.pause_icon)
 
     def set_current_track_label(self, text: str):
         """Sets the text of the current track label."""

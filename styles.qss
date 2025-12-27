@@ -1,0 +1,92 @@
+/* styles.qss - Dark Theme for MusicVault */
+
+QWidget {
+    background-color: #2B2B2B;
+    color: #BBBBBB;
+    font-family: "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
+    font-size: 10pt;
+}
+
+QMainWindow {
+    background-color: #2B2B2B;
+}
+
+/* Search Bar */
+QLineEdit {
+    background-color: #3C3F41;
+    border: 1px solid #1E1E1E;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 10pt;
+}
+
+QLineEdit:focus {
+    border: 1px solid #4B6EAF;
+}
+
+/* Tab View */
+QTabWidget::pane {
+    border: 1px solid #1E1E1E;
+    border-radius: 4px;
+}
+
+QTabBar::tab {
+    background-color: #3C3F41;
+    border: 1px solid #1E1E1E;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    padding: 8px 12px;
+    margin-right: 2px;
+}
+
+QTabBar::tab:selected {
+    background-color: #4B6EAF;
+    color: #FFFFFF;
+    border-bottom-color: #4B6EAF;
+}
+
+QTabBar::tab:!selected:hover {
+    background-color: #4A4D4F;
+}
+
+/* List Views */
+QListWidget {
+    background-color: #3C3F41;
+    border: 1px solid #1E1E1E;
+    border-radius: 4px;
+}
+
+QListWidget::item {
+    padding: 5px;
+}
+
+QListWidget::item:hover {
+    background-color: #4A4D4F;
+}
+
+QListWidget::item:selected {
+    background-color: #4B6EAF;
+    color: #FFFFFF;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #4A4D4F;
+    border: 1px solid #1E1E1E;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 10pt;
+}
+
+QPushButton:hover {
+    background-color: #5A5D5F;
+}
+
+QPushButton:pressed {
+    background-color: #3A3D3F;
+}
+
+/* Labels */
+QLabel {
+    font-size: 10pt;
+}
