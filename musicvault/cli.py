@@ -2,6 +2,7 @@ import os
 from musicvault.vault_manager import VaultManager
 from musicvault.sandbox_manager import SandboxManager
 from musicvault.view_manager import ViewManager
+from musicvault.api import run_api_server
 
 DB_PATH = "musicvault.db"
 
@@ -16,6 +17,7 @@ def print_help():
     print("  playlist new <name>  - Create a new playlist.")
     print("  playlist add <p_id> <t_id> - Add a track to a playlist.")
     print("  playlist view <p_id> - View a playlist.")
+    print("  serve                - Start the API server.")
     print("  help                 - Show this help message.")
     print("  exit                 - Exit the application.")
     print("------------------------")
@@ -39,6 +41,13 @@ def main():
 
             if action == "exit":
                 break
+            elif action == "serve":
+                print("Starting API server...")
+                run_api_server()
+                # After the server is stopped, the loop will continue.
+                # The user might want to exit or run other commands.
+                print("API server stopped.")
+                continue
             elif action == "help":
                 print_help()
             elif action == "add" and len(command) > 1:
