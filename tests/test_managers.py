@@ -2,6 +2,7 @@ import unittest
 import os
 import subprocess
 import sqlite3
+from unittest.mock import patch
 from mutagen.easyid3 import EasyID3
 
 from musicvault.vault_manager import VaultManager
@@ -15,6 +16,17 @@ class TestSandboxAndViewManagers(unittest.TestCase):
     def setUp(self):
         """Set up a temporary database and managers for testing."""
         self.db_path = "test_managers.db"
+
+        # Patch the fingerprint generator to return unique fingerprints
+        self.fingerprint_patcher = patch('musicvault.vault_manager.VaultManager._generate_fingerprint')
+        self.mock_fingerprint = self.fingerprint_patcher.start()
+
+        self.fingerprint_counter = 0
+        def unique_fingerprint_side_effect(filepath):
+            self.fingerprint_counter += 1
+            return f"unique_fingerprint_{self.fingerprint_counter}"
+        self.mock_fingerprint.side_effect = unique_fingerprint_side_effect
+
         self.vault_manager = VaultManager(self.db_path)
         self.sandbox_manager = SandboxManager(self.db_path)
         self.view_manager = ViewManager(self.db_path)
@@ -39,6 +51,7 @@ class TestSandboxAndViewManagers(unittest.TestCase):
 
     def tearDown(self):
         """Clean up the temporary database and dummy file."""
+        self.fingerprint_patcher.stop()
         self.vault_manager.close()
         self.sandbox_manager.close()
         self.view_manager.close()

@@ -8,7 +8,7 @@ class TrackTableModel(QAbstractTableModel):
     def __init__(self, tracks: List[Track]):
         super().__init__()
         self._tracks = tracks
-        self._headers = ["Title", "Artist", "Album", "Duration", "Favorite"]
+        self._headers = ["Title", "Artist", "Album", "Genre", "Year", "Duration", "Favorite"]
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         """Returns the number of rows in the model."""
@@ -34,13 +34,17 @@ class TrackTableModel(QAbstractTableModel):
             elif column == 2:
                 return track.album
             elif column == 3:
+                return track.genre
+            elif column == 4:
+                return track.release_year
+            elif column == 5:
                 # Format duration as MM:SS
                 if track.duration:
                     minutes = int(track.duration // 60)
                     seconds = int(track.duration % 60)
                     return f"{minutes:02d}:{seconds:02d}"
                 return "N/A"
-            elif column == 4:
+            elif column == 6:
                 return "★" if track.is_favorite else ""
 
         elif role == Qt.ItemDataRole.UserRole:
@@ -67,8 +71,12 @@ class TrackTableModel(QAbstractTableModel):
         elif column == 2:
             key = lambda t: t.album or ""
         elif column == 3:
-            key = lambda t: t.duration or 0
+            key = lambda t: t.genre or ""
         elif column == 4:
+            key = lambda t: t.release_year or 0
+        elif column == 5:
+            key = lambda t: t.duration or 0
+        elif column == 6:
             key = lambda t: t.is_favorite
 
         if key:

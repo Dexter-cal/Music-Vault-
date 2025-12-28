@@ -18,6 +18,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MusicVault")
+        self.setWindowIcon(QIcon("icons/logo.png"))
         self.setGeometry(100, 100, 1024, 768)
 
         # Create a central widget and main layout
@@ -113,11 +114,12 @@ class MainWindow(QMainWindow):
         return sidebar
 
     def play_track(self, track):
-        """Loads and plays the selected track."""
-        self.player.load_track(track.filepath)
+        """Adds a track to the queue and plays it."""
+        self.player.load_track(track)
         self.player.play()
         self.player_controls.set_current_track_label(f"Now Playing: {track.title}")
-        self.player_controls.play_pause_button.setText("Pause")
+        self.player_controls.play_pause_button.setIcon(self.player_controls.pause_icon)
+        self.player_controls.timer.start()
 
     def open_settings(self):
         """Opens the settings window."""
