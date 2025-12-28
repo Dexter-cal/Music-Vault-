@@ -40,6 +40,11 @@ class DeviceManager:
         buffer.seek(0)
         return buffer
 
+    def get_pairing_qrcode_terminal(self, token: str):
+        """Generates a QR code and prints it to the terminal."""
+        qr = pyqrcode.create(token)
+        print(qr.terminal(quiet_zone=1))
+
     def is_token_valid(self, token: str) -> bool:
         """Checks if a given token is valid and corresponds to a trusted device."""
         cursor = self.conn.cursor()

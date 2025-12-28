@@ -2,6 +2,7 @@ import os
 from musicvault.vault_manager import VaultManager
 from musicvault.sandbox_manager import SandboxManager
 from musicvault.view_manager import ViewManager
+from musicvault.device_manager import DeviceManager
 from musicvault.api import create_app, run_api_server
 
 DB_PATH = "musicvault.db"
@@ -18,6 +19,7 @@ def print_help():
     print("  playlist add <p_id> <t_id> - Add a track to a playlist.")
     print("  playlist view <p_id> - View a playlist.")
     print("  serve                - Start the API server.")
+    print("  pair <device_name>   - Pair a new mobile device.")
     print("  help                 - Show this help message.")
     print("  exit                 - Exit the application.")
     print("------------------------")
@@ -27,6 +29,7 @@ def main():
     vault_manager = VaultManager(DB_PATH)
     sandbox_manager = SandboxManager(DB_PATH)
     view_manager = ViewManager(DB_PATH)
+    device_manager = DeviceManager(DB_PATH)
 
     print("Welcome to MusicVault!")
     print_help()
@@ -49,6 +52,13 @@ def main():
                 # The user might want to exit or run other commands.
                 print("API server stopped.")
                 continue
+            elif action == "pair" and len(command) > 1:
+                device_name = " ".join(command[1:])
+                print(f"Generating pairing code for device: {device_name}")
+                token = device_manager.pair_device(device_name)
+                print("Scan the QR code below with the MusicVault mobile app:")
+                device_manager.get_pairing_qrcode_terminal(token)
+                print("\n")
             elif action == "help":
                 print_help()
             elif action == "add" and len(command) > 1:
