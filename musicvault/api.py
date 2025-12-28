@@ -138,6 +138,22 @@ def create_app(db_path="musicvault.db"):
         except sqlite3.Error as e:
             return jsonify({"error": "Database error", "message": str(e)}), 500
 
+    @app.route('/stream/<int:track_id>', methods=['GET'])
+    @token_required
+    def stream_track(track_id):
+        """Streams an audio file for a given track ID."""
+        try:
+            tracks = view_manager.get_track_by_id(track_id)
+            if not tracks:
+                return jsonify({"error": "Track not found"}), 404
+
+            track = tracks[0]
+            return send_file(track.filepath, mimetype='audio/mpeg')
+        except sqlite3.Error as e:
+            return jsonify({"error": "Database error", "message": str(e)}), 500
+        except FileNotFoundError:
+            return jsonify({"error": "File not found on server"}), 404
+
     return app
 
 def run_api_server(app, port=5000):

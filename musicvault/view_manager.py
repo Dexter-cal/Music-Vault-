@@ -59,6 +59,11 @@ class ViewManager:
         cursor.execute("SELECT DISTINCT genre FROM tracks WHERE genre IS NOT NULL ORDER BY genre")
         return [row[0] for row in cursor.fetchall()]
 
+    def get_track_by_id(self, track_id: int) -> List[Track]:
+        """Returns a single track by its ID."""
+        query = "SELECT id, filepath, title, artist, album, genre, release_year, duration FROM tracks WHERE id=?"
+        return self._execute_query(query, (track_id,))
+
     def close(self):
         """Closes the database connection."""
         self.conn.close()

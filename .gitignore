@@ -111,7 +111,6 @@ dmypy.json
 .pyre/
 
 # Private key files
-certs/
 certs/key.pem
 
 # Database files

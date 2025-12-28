@@ -1,32 +1,42 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { colors } from '../theme';
 import { usePlayer } from '../context/PlayerContext';
 
 export default function NowPlayingScreen() {
-  const { currentTrack, isPlaying, togglePlayback } = usePlayer();
-  const [position, setPosition] = React.useState(0); // This would be updated by the audio player
+  const { currentTrack, isPlaying, playbackStatus, togglePlayback } = usePlayer();
+
+  const formatMillis = (millis) => {
+    const totalSeconds = millis / 1000;
+    const seconds = Math.floor(totalSeconds % 60);
+    const minutes = Math.floor(totalSeconds / 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
 
   if (!currentTrack) {
     return (
       <View style={styles.container}>
+        <Image source={require('../assets/logo.png')} style={styles.logo} />
         <Text style={styles.emptyText}>No track selected</Text>
       </View>
     );
   }
 
+  const position = playbackStatus?.positionMillis || 0;
+  const duration = playbackStatus?.durationMillis || currentTrack.duration * 1000 || 0;
+
   return (
     <View style={styles.container}>
       {/* Album Art */}
       <View style={styles.albumArtContainer}>
-        <Ionicons name="musical-notes" size={200} color={colors.textSecondary} />
+        <Image source={require('../assets/logo.png')} style={styles.albumArt} />
       </View>
 
       {/* Track Info */}
       <View style={styles.trackInfoContainer}>
-        <Text style={styles.trackTitle}>{currentTrack.title}</Text>
+        <Text style={styles.trackTitle} numberOfLines={1}>{currentTrack.title}</Text>
         <Text style={styles.trackArtist}>{currentTrack.artist}</Text>
       </View>
 
@@ -35,15 +45,16 @@ export default function NowPlayingScreen() {
         <Slider
           style={styles.slider}
           minimumValue={0}
-          maximumValue={currentTrack.duration || 0}
+          maximumValue={duration}
           value={position}
           minimumTrackTintColor={colors.primary}
           maximumTrackTintColor={colors.textSecondary}
           thumbTintColor={colors.primary}
+          // onSlidingComplete={(value) => sound?.setPositionAsync(value)} // Implement seek
         />
         <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>{new Date(position * 1000).toISOString().substr(14, 5)}</Text>
-          <Text style={styles.timeText}>{new Date((currentTrack.duration || 0) * 1000).toISOString().substr(14, 5)}</Text>
+          <Text style={styles.timeText}>{formatMillis(position)}</Text>
+          <Text style={styles.timeText}>{formatMillis(duration)}</Text>
         </View>
       </View>
 
@@ -71,6 +82,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
+  logo: {
+    width: 150,
+    height: 150,
+    marginBottom: 20,
+  },
   emptyText: {
     color: colors.textSecondary,
     fontSize: 18,
@@ -78,15 +94,19 @@ const styles = StyleSheet.create({
   albumArtContainer: {
     width: 300,
     height: 300,
-    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
     marginBottom: 30,
+  },
+  albumArt: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
   },
   trackInfoContainer: {
     alignItems: 'center',
     marginBottom: 30,
+    width: '100%',
   },
   trackTitle: {
     fontSize: 24,
