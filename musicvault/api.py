@@ -154,6 +154,21 @@ def create_app(db_path="musicvault.db"):
         except FileNotFoundError:
             return jsonify({"error": "File not found on server"}), 404
 
+    @app.route('/search', methods=['GET'])
+    @token_required
+    def search():
+        """Performs a search for tracks, artists, and albums."""
+        query = request.args.get('q')
+        if not query:
+            return jsonify({"error": "Query parameter 'q' is required."}), 400
+
+        try:
+            results = view_manager.search(query)
+            results['tracks'] = [track.to_dict() for track in results['tracks']]
+            return jsonify(results)
+        except sqlite3.Error as e:
+            return jsonify({"error": "Database error", "message": str(e)}), 500
+
     return app
 
 def run_api_server(app, port=5000):

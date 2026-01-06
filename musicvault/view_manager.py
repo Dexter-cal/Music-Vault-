@@ -64,6 +64,23 @@ class ViewManager:
         query = "SELECT id, filepath, title, artist, album, genre, release_year, duration FROM tracks WHERE id=?"
         return self._execute_query(query, (track_id,))
 
+    def search(self, query: str) -> dict:
+        """Searches for tracks, artists, and albums."""
+        # Search tracks
+        track_query = "SELECT id, filepath, title, artist, album, genre, release_year, duration FROM tracks WHERE title LIKE ? OR artist LIKE ? OR album LIKE ? ORDER BY title"
+        tracks = self._execute_query(track_query, (f'%{query}%', f'%{query}%', f'%{query}%'))
+
+        # Search artists
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT DISTINCT artist FROM tracks WHERE artist LIKE ? ORDER BY artist", (f'%{query}%',))
+        artists = [row[0] for row in cursor.fetchall()]
+
+        # Search albums
+        cursor.execute("SELECT DISTINCT album FROM tracks WHERE album LIKE ? ORDER BY album", (f'%{query}%',))
+        albums = [row[0] for row in cursor.fetchall()]
+
+        return {"tracks": tracks, "artists": artists, "albums": albums}
+
     def close(self):
         """Closes the database connection."""
         self.conn.close()

@@ -30,8 +30,8 @@ export default function TrackList() {
     fetchTracks();
   }, [isConnected]);
 
-  const handleTrackPress = (track) => {
-    playTrack(track);
+  const handleTrackPress = (track, index) => {
+    playTrack(track, tracks, index);
     navigation.navigate('Now Playing');
   };
 
@@ -43,8 +43,8 @@ export default function TrackList() {
     <FlatList
       data={tracks}
       keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => (
-        <TouchableOpacity onPress={() => handleTrackPress(item)}>
+      renderItem={({ item, index }) => (
+        <TouchableOpacity onPress={() => handleTrackPress(item, index)}>
           <View style={styles.itemContainer}>
             <Text style={styles.itemTitle}>{item.title}</Text>
             <Text style={styles.itemArtist}>{item.artist}</Text>

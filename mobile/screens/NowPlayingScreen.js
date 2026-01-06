@@ -6,7 +6,10 @@ import { colors } from '../theme';
 import { usePlayer } from '../context/PlayerContext';
 
 export default function NowPlayingScreen() {
-  const { currentTrack, isPlaying, playbackStatus, togglePlayback } = usePlayer();
+  const {
+    currentTrack, isPlaying, playbackStatus, togglePlayback, seek,
+    playNext, playPrevious, isShuffle, toggleShuffle, repeatMode, cycleRepeatMode
+  } = usePlayer();
 
   const formatMillis = (millis) => {
     const totalSeconds = millis / 1000;
@@ -26,6 +29,12 @@ export default function NowPlayingScreen() {
 
   const position = playbackStatus?.positionMillis || 0;
   const duration = playbackStatus?.durationMillis || currentTrack.duration * 1000 || 0;
+
+  const getRepeatIcon = () => {
+    if (repeatMode === 'one') return 'repeat-one';
+    if (repeatMode === 'all') return 'repeat';
+    return 'repeat'; // Icon for 'off' mode, maybe dimmed
+  };
 
   return (
     <View style={styles.container}>
@@ -50,7 +59,7 @@ export default function NowPlayingScreen() {
           minimumTrackTintColor={colors.primary}
           maximumTrackTintColor={colors.textSecondary}
           thumbTintColor={colors.primary}
-          // onSlidingComplete={(value) => sound?.setPositionAsync(value)} // Implement seek
+          onSlidingComplete={(value) => seek(value)}
         />
         <View style={styles.timeContainer}>
           <Text style={styles.timeText}>{formatMillis(position)}</Text>
@@ -59,15 +68,25 @@ export default function NowPlayingScreen() {
       </View>
 
       {/* Controls */}
-      <View style={styles.controlsContainer}>
-        <TouchableOpacity>
+      <View style={styles.mainControlsContainer}>
+        <TouchableOpacity onPress={playPrevious}>
           <Ionicons name="play-skip-back" size={40} color={colors.text} />
         </TouchableOpacity>
         <TouchableOpacity onPress={togglePlayback}>
           <Ionicons name={isPlaying ? 'pause-circle' : 'play-circle'} size={70} color={colors.text} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={playNext}>
           <Ionicons name="play-skip-forward" size={40} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Secondary Controls */}
+      <View style={styles.secondaryControlsContainer}>
+        <TouchableOpacity onPress={toggleShuffle}>
+          <Ionicons name="shuffle" size={30} color={isShuffle ? colors.primary : colors.textSecondary} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={cycleRepeatMode}>
+          <Ionicons name={getRepeatIcon()} size={30} color={repeatMode !== 'off' ? colors.primary : colors.textSecondary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -134,10 +153,16 @@ const styles = StyleSheet.create({
   timeText: {
     color: colors.textSecondary,
   },
-  controlsContainer: {
+  mainControlsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     width: '80%',
+    marginBottom: 30,
+  },
+  secondaryControlsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '60%',
   },
 });

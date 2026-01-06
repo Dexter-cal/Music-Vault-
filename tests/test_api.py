@@ -97,5 +97,15 @@ class ApiTestCase(unittest.TestCase):
         data = json.loads(response.data)
         self.assertEqual(len(data), 3)
 
+    def test_search(self):
+        """Test the /search endpoint."""
+        token = self.device_manager.pair_device('Test Phone')
+        response = self.client.get('/search?q=A1', headers={'Authorization': f'Bearer {token}'})
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(len(data['tracks']), 2)
+        self.assertEqual(data['artists'], ['A1'])
+        self.assertEqual(data['albums'], []) # Corrected: 'Al1' does not contain 'A1'
+
 if __name__ == '__main__':
     unittest.main()
